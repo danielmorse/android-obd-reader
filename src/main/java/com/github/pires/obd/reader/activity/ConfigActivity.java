@@ -46,6 +46,7 @@ public class ConfigActivity extends PreferenceActivity implements OnPreferenceCh
     public static final String GPS_UPDATE_PERIOD_KEY = "gps_update_period_preference";
     public static final String GPS_DISTANCE_PERIOD_KEY = "gps_distance_period_preference";
     public static final String ENABLE_BT_KEY = "enable_bluetooth_preference";
+    public static final String ENABLE_USB_KEY = "enable_usb_preference";
     public static final String MAX_FUEL_ECON_KEY = "max_fuel_econ_preference";
     public static final String CONFIG_READER_KEY = "reader_config_preference";
     public static final String ENABLE_FULL_LOGGING_KEY = "enable_full_logging";

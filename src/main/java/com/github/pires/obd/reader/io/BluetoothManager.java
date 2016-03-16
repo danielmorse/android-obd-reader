@@ -31,7 +31,7 @@ public class BluetoothManager {
      * @return The BluetoothSocket
      * @throws IOException
      */
-    public static BluetoothSocket connect(BluetoothDevice dev) throws IOException {
+    public static ObdSocket connect(BluetoothDevice dev) throws IOException {
     	BluetoothSocket sock = null;
         BluetoothSocket sockFallback = null;
 
@@ -54,6 +54,7 @@ public class BluetoothManager {
                 throw new IOException(e2.getMessage());
             }
         }
-    	return sock;
+
+    	return new BluetoothObdSocket(sock);
     }
 }

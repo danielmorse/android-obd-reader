@@ -34,6 +34,7 @@ import com.github.pires.obd.exceptions.NoDataException;
 import com.github.pires.obd.exceptions.UnableToConnectException;
 import com.github.pires.obd.reader.R;
 import com.github.pires.obd.reader.io.BluetoothManager;
+import com.github.pires.obd.reader.io.ObdSocket;
 import com.google.inject.Inject;
 
 import java.io.IOException;
@@ -63,7 +64,7 @@ public class TroubleCodesActivity extends Activity {
     private String remoteDevice;
     private GetTroubleCodesTask gtct;
     private BluetoothDevice dev = null;
-    private BluetoothSocket sock = null;
+    private ObdSocket sock = null;
     private Handler mHandler = new Handler(new Handler.Callback() {
 
 
@@ -369,7 +370,7 @@ public class TroubleCodesActivity extends Activity {
             return result;
         }
 
-        public void closeSocket(BluetoothSocket sock) {
+        public void closeSocket(ObdSocket sock) {
             if (sock != null)
                 // close socket
                 try {

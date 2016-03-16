@@ -44,7 +44,7 @@ public class ObdGatewayService extends AbstractGatewayService {
     SharedPreferences prefs;
 
     private BluetoothDevice dev = null;
-    private BluetoothSocket sock = null;
+    private ObdSocket sock = null;
 
     public void startService() throws IOException {
         Log.d(TAG, "Starting service..");
