@@ -2,7 +2,6 @@ package com.github.pires.obd.reader.io;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -113,7 +112,7 @@ public class ObdGatewayService extends AbstractGatewayService {
         Log.d(TAG, "Starting OBD connection..");
         isRunning = true;
         try {
-            sock = BluetoothManager.connect(dev);
+            sock = ObdDeviceManager.connect(dev);
         } catch (Exception e2) {
             Log.e(TAG, "There was an error while establishing Bluetooth connection. Stopping app..", e2);
             stopService();

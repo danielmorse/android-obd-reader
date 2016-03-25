@@ -75,6 +75,8 @@
     <string name="pref_usb_title">Use USB interface</string>
     <string name="pref_usb_summaryOff">Use a USB OBD Cable</string>
     <string name="pref_usb_summaryOn">Use a Bluetooth OBD interface</string>
+    <string name="pref_usb_list_devices_summary">List of Usb devices.</string>
+    <string name="pref_usb_list_devices_title">Usb Devices</string>
 
     <string name="pref_gps_category_title">Enable GPS</string>
     <string name="pref_gps_category_summaryOff">Turn on GPS</string>

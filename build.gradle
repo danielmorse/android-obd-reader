@@ -1,3 +1,11 @@
+allprojects {
+    repositories {
+        jcenter()
+        maven { url "https://jitpack.io" }
+    }
+}
+
+
 buildscript {
     repositories {
         mavenCentral()
@@ -46,4 +54,5 @@ dependencies {
     compile 'org.roboguice:roboguice:3.+'
     provided 'org.roboguice:roboblender:3.+'
     compile 'com.squareup.retrofit:retrofit:1.9.0'
+    compile 'com.github.felHR85:UsbSerial:4.0'
 }

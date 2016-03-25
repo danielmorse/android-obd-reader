@@ -8,9 +8,9 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
-public class BluetoothManager {
+public class ObdDeviceManager {
 	
-    private static final String TAG = BluetoothManager.class.getName();
+    private static final String TAG = ObdDeviceManager.class.getName();
     /*
      * http://developer.android.com/reference/android/bluetooth/BluetoothDevice.html
      * #createRfcommSocketToServiceRecord(java.util.UUID)

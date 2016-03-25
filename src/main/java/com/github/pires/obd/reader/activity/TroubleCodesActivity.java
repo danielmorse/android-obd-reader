@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -33,16 +32,14 @@ import com.github.pires.obd.exceptions.MisunderstoodCommandException;
 import com.github.pires.obd.exceptions.NoDataException;
 import com.github.pires.obd.exceptions.UnableToConnectException;
 import com.github.pires.obd.reader.R;
-import com.github.pires.obd.reader.io.BluetoothManager;
+import com.github.pires.obd.reader.io.ObdDeviceManager;
 import com.github.pires.obd.reader.io.ObdSocket;
 import com.google.inject.Inject;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 public class TroubleCodesActivity extends Activity {
 
@@ -153,7 +150,7 @@ public class TroubleCodesActivity extends Activity {
         switch (item.getItemId()) {
             case R.id.action_clear_codes:
                 try {
-                    sock = BluetoothManager.connect(dev);
+                    sock = ObdDeviceManager.connect(dev);
                 } catch (Exception e) {
                     Log.e(
                             TAG,
@@ -291,7 +288,7 @@ public class TroubleCodesActivity extends Activity {
 
                 // Instantiate a BluetoothSocket for the remote device and connect it.
                 try {
-                    sock = BluetoothManager.connect(dev);
+                    sock = ObdDeviceManager.connect(dev);
                 } catch (Exception e) {
                     Log.e(
                             TAG,

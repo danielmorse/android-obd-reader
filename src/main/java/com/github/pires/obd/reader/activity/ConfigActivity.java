@@ -5,6 +5,8 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
@@ -25,6 +27,8 @@ import com.github.pires.obd.reader.R;
 import com.github.pires.obd.reader.config.ObdConfig;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Set;
 
 /**
@@ -33,6 +37,7 @@ import java.util.Set;
 public class ConfigActivity extends PreferenceActivity implements OnPreferenceChangeListener {
 
     public static final String BLUETOOTH_LIST_KEY = "bluetooth_list_preference";
+    public static final String USB_LIST_KEY = "usb_list_preference";
     public static final String UPLOAD_URL_KEY = "upload_url_preference";
     public static final String UPLOAD_DATA_KEY = "upload_data_preference";
     public static final String OBD_UPDATE_PERIOD_KEY = "obd_update_period_preference";
@@ -200,9 +205,13 @@ public class ConfigActivity extends PreferenceActivity implements OnPreferenceCh
         checkGps();
 
         ArrayList<CharSequence> pairedDeviceStrings = new ArrayList<>();
+        ArrayList<CharSequence> usbDeviceStrings = new ArrayList<>();
         ArrayList<CharSequence> vals = new ArrayList<>();
+        ArrayList<CharSequence> usbVals = new ArrayList<>();
         ListPreference listBtDevices = (ListPreference) getPreferenceScreen()
                 .findPreference(BLUETOOTH_LIST_KEY);
+        ListPreference listUsbDevices = (ListPreference) getPreferenceScreen()
+                .findPreference(USB_LIST_KEY);
         ArrayList<CharSequence> protocolStrings = new ArrayList<>();
         ListPreference listProtocols = (ListPreference) getPreferenceScreen()
                 .findPreference(PROTOCOLS_LIST_KEY);
@@ -290,6 +299,36 @@ public class ConfigActivity extends PreferenceActivity implements OnPreferenceCh
         }
         listBtDevices.setEntries(pairedDeviceStrings.toArray(new CharSequence[0]));
         listBtDevices.setEntryValues(vals.toArray(new CharSequence[0]));
+    /*
+     * Now do the same for USB devices
+     */
+        UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+        listUsbDevices.setEntries(new CharSequence[1]);
+        listUsbDevices.setEntryValues(new CharSequence[1]);
+        listUsbDevices.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference preference) {
+                // see what I mean in the previous comment?
+                /*if (mBtAdapter == null || !mBtAdapter.isEnabled()) {
+                    Toast.makeText(thisActivity,
+                            "This device does not support Bluetooth or it is disabled.",
+                            Toast.LENGTH_LONG).show();
+                    return false;
+                }*/
+                return true;
+            }
+        });
+
+        HashMap<String, UsbDevice> usbDevMap = usbManager.getDeviceList();
+        Collection<UsbDevice> usbDevices = usbDevMap.values();
+        if (usbDevices.size() > 0) {
+            for (UsbDevice device : usbDevices) {
+                    usbDeviceStrings.add(device.getDeviceName());
+                    usbVals.add(device.getDeviceId()+"");
+            }
+        }
+        listUsbDevices.setEntries(usbDeviceStrings.toArray(new CharSequence[0]));
+        //listUsbDevices.setEntryValues(usbVals.toArray(new CharSequence[0])); //If it is possible to look up on tese ids use this.
+        listUsbDevices.setEntryValues(usbDeviceStrings.toArray(new CharSequence[0]));
     }
 
     /**
