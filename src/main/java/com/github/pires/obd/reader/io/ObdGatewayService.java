@@ -42,28 +42,10 @@ public class ObdGatewayService extends AbstractGatewayService {
     @Inject
     SharedPreferences prefs;
 
-    private BluetoothDevice dev = null;
     private ObdSocket sock = null;
 
     public void startService() throws IOException {
         Log.d(TAG, "Starting service..");
-
-        // get the remote Bluetooth device
-        final String remoteDevice = prefs.getString(ConfigActivity.BLUETOOTH_LIST_KEY, null);
-        if (remoteDevice == null || "".equals(remoteDevice)) {
-            Toast.makeText(ctx, getString(R.string.text_bluetooth_nodevice), Toast.LENGTH_LONG).show();
-
-            // log error
-            Log.e(TAG, "No Bluetooth device has been selected.");
-
-            // TODO kill this service gracefully
-            stopService();
-            throw new IOException();
-        } else {
-
-            final BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
-            dev = btAdapter.getRemoteDevice(remoteDevice);
-
 
     /*
      * Establish Bluetooth connection
@@ -79,26 +61,24 @@ public class ObdGatewayService extends AbstractGatewayService {
      * http://developer.android.com/reference/android/bluetooth/BluetoothAdapter
      * .html#cancelDiscovery()
      */
-            Log.d(TAG, "Stopping Bluetooth discovery.");
-            btAdapter.cancelDiscovery();
+        Log.d(TAG, "Stopping Bluetooth discovery.");
+        showNotification(getString(R.string.notification_action), getString(R.string.service_starting), R.drawable.ic_btcar, true, true, false);
 
-            showNotification(getString(R.string.notification_action), getString(R.string.service_starting), R.drawable.ic_btcar, true, true, false);
+        try {
+            startObdConnection();
+        } catch (Exception e) {
+            Log.e(
+                    TAG,
+                    "There was an error while establishing connection. -> "
+                            + e.getMessage()
+            );
 
-            try {
-                startObdConnection();
-            } catch (Exception e) {
-                Log.e(
-                        TAG,
-                        "There was an error while establishing connection. -> "
-                                + e.getMessage()
-                );
-
-                // in case of failure, stop this service.
-                stopService();
-                throw new IOException();
-            }
-            showNotification(getString(R.string.notification_action), getString(R.string.service_started), R.drawable.ic_btcar, true, true, false);
+            // in case of failure, stop this service.
+            stopService();
+            throw new IOException();
         }
+        showNotification(getString(R.string.notification_action), getString(R.string.service_started), R.drawable.ic_btcar, true, true, false);
+
     }
 
     /**
@@ -112,7 +92,7 @@ public class ObdGatewayService extends AbstractGatewayService {
         Log.d(TAG, "Starting OBD connection..");
         isRunning = true;
         try {
-            sock = ObdDeviceManager.connect(dev);
+            sock = ObdDeviceManager.connect(this);
         } catch (Exception e2) {
             Log.e(TAG, "There was an error while establishing Bluetooth connection. Stopping app..", e2);
             stopService();

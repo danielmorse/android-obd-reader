@@ -39,6 +39,7 @@ public class ObdDeviceManager {
 
         final BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
         dev = btAdapter.getRemoteDevice(remoteDevice);
+        btAdapter.cancelDiscovery();
         return ObdDeviceManager.connect(dev);
     }
 
@@ -51,7 +52,7 @@ public class ObdDeviceManager {
      * @return The BluetoothSocket
      * @throws IOException
      */
-    public static ObdSocket connect(BluetoothDevice dev) throws IOException {
+    private static ObdSocket connect(BluetoothDevice dev) throws IOException {
     	BluetoothSocket sock = null;
         BluetoothSocket sockFallback = null;
 
