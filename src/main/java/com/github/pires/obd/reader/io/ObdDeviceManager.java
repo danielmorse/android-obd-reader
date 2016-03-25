@@ -4,9 +4,15 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
+
+import com.github.pires.obd.reader.activity.ConfigActivity;
 
 public class ObdDeviceManager {
 	
@@ -21,6 +27,20 @@ public class ObdDeviceManager {
      * UUID."
      */
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+
+    public static ObdSocket connect(Context ctx) throws IOException
+    {
+        BluetoothDevice dev = null;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+        final String remoteDevice = prefs.getString(ConfigActivity.BLUETOOTH_LIST_KEY, null);
+        if (remoteDevice == null || "".equals(remoteDevice))
+            throw new IOException("No Bluetooth device selected");
+
+        final BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+        dev = btAdapter.getRemoteDevice(remoteDevice);
+        return ObdDeviceManager.connect(dev);
+    }
 
     /**
      * Instantiates a BluetoothSocket for the remote device and connects it.
