@@ -2,6 +2,8 @@ package com.github.pires.obd.reader.io;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.UUID;
 
 import android.bluetooth.BluetoothAdapter;
@@ -9,9 +11,14 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbDeviceConnection;
+import android.hardware.usb.UsbManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.felhr.usbserial.UsbSerialDevice;
+import com.felhr.usbserial.UsbSerialInterface;
 import com.github.pires.obd.reader.activity.ConfigActivity;
 
 public class ObdDeviceManager {
@@ -31,16 +38,40 @@ public class ObdDeviceManager {
 
     public static ObdSocket connect(Context ctx) throws IOException
     {
-        BluetoothDevice dev = null;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
-        final String remoteDevice = prefs.getString(ConfigActivity.BLUETOOTH_LIST_KEY, null);
-        if (remoteDevice == null || "".equals(remoteDevice))
-            throw new IOException("No Bluetooth device selected");
+        if(prefs.getBoolean(ConfigActivity.ENABLE_USB_KEY, false)) {
+            String usbDevice = prefs.getString(ConfigActivity.USB_LIST_KEY, null);
+            if (usbDevice == null || "".equals(usbDevice))
+                throw new IOException("No USB device selected");
+            UsbDevice dev = null;
+            UsbManager usbManager = (UsbManager) ctx.getSystemService(Context.USB_SERVICE);
+            HashMap<String, UsbDevice> usbDevMap = usbManager.getDeviceList();
+            Collection<UsbDevice> usbDevices = usbDevMap.values();
 
-        final BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
-        dev = btAdapter.getRemoteDevice(remoteDevice);
-        btAdapter.cancelDiscovery();
-        return ObdDeviceManager.connect(dev);
+            for (UsbDevice device : usbDevices) {
+                if(device.getDeviceName() == usbDevice) {
+                    dev = device;
+                    break;
+                }
+
+            }
+
+            if(null == dev) {
+                throw new IOException("Could not find selected usb device");
+            }
+            UsbDeviceConnection con = usbManager.openDevice(dev);
+            return ObdDeviceManager.connect(dev, con);
+        }
+        else {
+            String remoteDevice = prefs.getString(ConfigActivity.BLUETOOTH_LIST_KEY, null);
+            if (remoteDevice == null || "".equals(remoteDevice))
+                throw new IOException("No Bluetooth device selected");
+
+            final BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+            BluetoothDevice dev = btAdapter.getRemoteDevice(remoteDevice);
+            btAdapter.cancelDiscovery();
+            return ObdDeviceManager.connect(dev);
+        }
     }
 
     /**
@@ -77,5 +108,11 @@ public class ObdDeviceManager {
         }
 
     	return new BluetoothObdSocket(sock);
+    }
+
+    private static ObdSocket connect (UsbDevice dev, UsbDeviceConnection con)
+    {
+        UsbSerialInterface iface = UsbSerialDevice.createUsbSerialDevice(dev, con);
+        return new SerialObdSocket(iface);
     }
 }
