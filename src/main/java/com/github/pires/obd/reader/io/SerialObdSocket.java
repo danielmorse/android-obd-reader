@@ -69,6 +69,8 @@ public class SerialObdSocket implements ObdSocket {
                         Log.e(TAG, devName + " is not the device we are looking for " + SerialObdSocket.this.dev.getDeviceName());
                     }
 
+                    SerialObdSocket.this.ctx.unregisterReceiver(permRec);
+                    permRec = null;
 
                 }
 
@@ -113,6 +115,12 @@ public class SerialObdSocket implements ObdSocket {
     public void close() throws IOException {
         if(null != iface) {
             iface.close();
+        }
+
+        if(null!= permRec)
+        {
+            ctx.unregisterReceiver(permRec);
+            permRec = null;
         }
     }
 }
