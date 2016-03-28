@@ -47,9 +47,10 @@ public class ObdDeviceManager {
             UsbManager usbManager = (UsbManager) ctx.getSystemService(Context.USB_SERVICE);
             HashMap<String, UsbDevice> usbDevMap = usbManager.getDeviceList();
             Collection<UsbDevice> usbDevices = usbDevMap.values();
-
+            Log.d(TAG, "Looking for USB device " + usbDevice + " In list of length " + usbDevices.size());
             for (UsbDevice device : usbDevices) {
-                if(device.getDeviceName() == usbDevice) {
+                Log.d(TAG, "Checking device " + device.getDeviceName());
+                if(usbDevice.equals(device.getDeviceName())) {
                     dev = device;
                     break;
                 }
@@ -59,8 +60,9 @@ public class ObdDeviceManager {
             if(null == dev) {
                 throw new IOException("Could not find selected usb device");
             }
-            UsbDeviceConnection con = usbManager.openDevice(dev);
-            return ObdDeviceManager.connect(dev, con);
+            //UsbDeviceConnection con = usbManager.openDevice(dev);
+            //return ObdDeviceManager.connect(dev, con);
+            return new SerialObdSocket(dev, ctx);
         }
         else {
             String remoteDevice = prefs.getString(ConfigActivity.BLUETOOTH_LIST_KEY, null);
@@ -110,9 +112,9 @@ public class ObdDeviceManager {
     	return new BluetoothObdSocket(sock);
     }
 
-    private static ObdSocket connect (UsbDevice dev, UsbDeviceConnection con)
+    /*private static ObdSocket connect (UsbDevice dev, UsbDeviceConnection con)
     {
         UsbSerialInterface iface = UsbSerialDevice.createUsbSerialDevice(dev, con);
         return new SerialObdSocket(iface);
-    }
+    }*/
 }

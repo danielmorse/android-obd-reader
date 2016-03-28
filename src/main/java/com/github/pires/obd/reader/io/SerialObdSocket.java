@@ -1,7 +1,18 @@
 package com.github.pires.obd.reader.io;
 
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbDeviceConnection;
+import android.hardware.usb.UsbManager;
+import android.util.Log;
+
 import com.felhr.usbserial.SerialInputStream;
 import com.felhr.usbserial.SerialOutputStream;
+import com.felhr.usbserial.UsbSerialDevice;
 import com.felhr.usbserial.UsbSerialInterface;
 
 import java.io.IOException;
@@ -13,19 +24,79 @@ import java.io.OutputStream;
  */
 public class SerialObdSocket implements ObdSocket {
 
-    UsbSerialInterface dev;
+    private static final String TAG = SerialObdSocket.class.getName();
+    private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
+
+    UsbSerialInterface iface;
+    Context ctx;
     SerialInputStream inStream;
     SerialOutputStream outStream;
+    UsbManager usbManager;
+    UsbDevice dev;
+    BroadcastReceiver permRec;
 
-    public SerialObdSocket(UsbSerialInterface dev){
+
+    public SerialObdSocket(UsbDevice dev, Context ctx){
+        usbManager = (UsbManager) ctx.getSystemService(Context.USB_SERVICE);
+        this.ctx = ctx;
         this.dev = dev;
-        inStream = new SerialInputStream(dev);
-        outStream = new SerialOutputStream(dev);
+        this.inStream = null;
+        this.outStream = null;
+        permRec = null;
+
+        //this.dev = dev;
+        if(usbManager.hasPermission(dev))
+        {
+            initUsb();
+        }
+        else
+        {
+            permRec = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                    if (SerialObdSocket.this.dev.equals(device))
+                    {
+                        if(intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                            SerialObdSocket.this.initUsb();
+                        }
+                        else {
+                            Log.e(TAG, device.getDeviceName() + " is not the device we are looking for " + SerialObdSocket.this.dev.getDeviceName());
+                        }
+                    }
+                    else {
+                        String devName = (null == device) ? "(null device)" : device.getDeviceName();
+                        Log.e(TAG, devName + " is not the device we are looking for " + SerialObdSocket.this.dev.getDeviceName());
+                    }
+
+
+                }
+
+            };
+
+            PendingIntent permissionIntent = PendingIntent.getBroadcast(ctx, 0, new Intent(ACTION_USB_PERMISSION), 0);
+            Log.e(TAG, "Got permission intent " + ((permissionIntent== null)? "{null object}" : permissionIntent.toString()));
+            IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+            ctx.registerReceiver(permRec, filter);
+            usbManager.requestPermission(dev, permissionIntent);
+
+        }
+
+
+    }
+
+    private void initUsb()
+    {
+        UsbDeviceConnection con = usbManager.openDevice(this.dev);
+        iface = UsbSerialDevice.createUsbSerialDevice(this.dev, con);
+        iface.open();
+        inStream = new SerialInputStream(iface);
+        outStream = new SerialOutputStream(iface);
     }
 
     @Override
     public boolean isConnected() {
-        return true;
+        return null != iface;
     }
 
     @Override
@@ -40,6 +111,8 @@ public class SerialObdSocket implements ObdSocket {
 
     @Override
     public void close() throws IOException {
-        dev.close();
+        if(null != iface) {
+            iface.close();
+        }
     }
 }
