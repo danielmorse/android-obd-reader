@@ -91,7 +91,18 @@ public class SerialObdSocket implements ObdSocket {
     {
         UsbDeviceConnection con = usbManager.openDevice(this.dev);
         iface = UsbSerialDevice.createUsbSerialDevice(this.dev, con);
-        iface.open();
+        iface.open(); //I think this needs be to be BEFORE setting any flow control.
+        //If this all gets into live code, yes I know that this needs to be set in settings.
+        iface.setBaudRate(38400);
+        iface.setDataBits(UsbSerialInterface.DATA_BITS_8);
+        iface.setParity(UsbSerialInterface.PARITY_NONE);
+        iface.setStopBits(UsbSerialInterface.STOP_BITS_1);
+        iface.setFlowControl(UsbSerialInterface.FLOW_CONTROL_XON_XOFF);
+        iface.setDTR(true);
+        iface.setRTS(true);
+
+
+        Log.e(TAG, "Connected to "  + this.dev.getDeviceName() + " Type " +this.iface.getClass().getName());
         inStream = new SerialInputStream(iface);
         outStream = new SerialOutputStream(iface);
     }
